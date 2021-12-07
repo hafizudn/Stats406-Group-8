@@ -12,7 +12,7 @@ set.seed(3910349)
 #install.packages("ggplot2")
 library(tidyverse)
 ```
-
+# hello
 ```{r}
 shootings <- read.csv("school_shooting_db_20200316.csv")
 shootings
