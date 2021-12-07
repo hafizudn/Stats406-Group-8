@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(3910349)
 #install.packages("tidyverse")
-install.packages("ggplot2")
+#install.packages("ggplot2")
 library(tidyverse)
 ```
 
