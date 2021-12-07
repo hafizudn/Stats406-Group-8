@@ -1,0 +1,83 @@
+---
+title: "Research Stats 406"
+author: "Muhammad Hafizudeen Mohamad Saman, hafizudn"
+date: "Due Oct. 31 at midnight"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+set.seed(3910349)
+#install.packages("tidyverse")
+install.packages("ggplot2")
+library(tidyverse)
+```
+
+```{r}
+shootings <- read.csv("school_shooting_db_20200316.csv")
+shootings
+shootings$Summary <- NULL
+shootings$Narrative..Detailed.Summary..Background. <- NULL
+shootings$Sources <- NULL
+shootings$Shooter.Name <- NULL
+shootings$School <- NULL
+
+# summary(shootings)
+# shootings$City <- as.factor(shootings$City)
+# shootings$State <- as.factor(shootings$State)
+# shootings$Gender.of.Victims..M.F.Both. <- as.factor(shootings$Gender.of.Victims..M.F.Both.)
+# shootings$Victim.s.Affiliation.w..School <- as.factor(shootings$Victim.s.Affiliation.w..School)
+# shootings$Victims.Race <- as.factor(shootings$Victims.Race)
+# shootings$Victim.Ethnicity <- as.factor(shootings$Victim.Ethnicity )
+# shootings$Targeted.Specific.Victim.s. <- as.factor(shootings$Targeted.Specific.Victim.s.)
+# shootings$Random.Victims <- as.factor(shootings$Random.Victims)
+# shootings$Domestic.Violence..Y.N. <- as.factor(shootings$Domestic.Violence..Y.N.)
+# shootings$Suicide..Shooter.was.only.victim..Y.N..N.A <- as.factor(shootings$Suicide..Shooter.was.only.victim..Y.N..N.A)
+
+
+shootings <- as.data.frame(unclass(shootings),stringsAsFactors=TRUE)
+summary(shootings)                                                                                                                                                       
+```
+# Data
+
+The data that we are going to use to analyze the suicide trend of school shooter over the year in this project is provided by the Center for Homeland Defense and Security (CHDS) at the Naval Postgraduate School. This data recorded the instances of school shootings that happen over the span of 50 years in the United States, ranging from 1970 to 2020. The data provides substantial information concerning each occasion of school shooting, including detailed location, time, victims, shooter, firearm used, hostages, and even a brief summary on what happened in each instance of shooting. 
+
+# Explaining Defficiencies
+
+Some data are not accurate. For example, there is a shooter who is listed as 40888 years old, which drastically shifted the mean of the shooter's age to 59.5 years old. These data are checked against the source and is replaced by its actual value or is removed.
+
+Looking at our variable of interest, such as the shooter's age, there are 489 values that are missing in our data. TO avoid 
+
+From a preliminary analysis, we found out that there is an increasing trend in suicide attempt by school shooter over the last five decades. We planned on going further to analyze this relationship and relate this to the age of the shooter yada yada yada
+
+
+```{r}
+#Change the value of the outlier
+naremoved <- shootings[!is.na(shootings$Shooter.Age),]
+naremoved$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
+
+library(ggplot2)
+
+ggplot(data = shootings) +
+    geom_col(mapping = aes(x = Year, y = Suicide..or.attempted.suicide..by.Shooter..Y.N.)) 
+```
+
+```{r}
+install.packages("maps")
+library("maps") #Assuming this is installed, otherwise install first
+USStates <- map_data("state")
+arrests <- USArrests #Create a copy
+names(arrests) <- tolower(names(arrests)) #Converts column name to lower case
+arrests$region <- tolower(rownames(USArrests)) #Same for row names
+
+# Merge the map data with the arrests data based on region
+arrestsbyregion <- merge(USStates, arrests, sort = FALSE, by = "region")
+arrestsbyregion <- arrestsbyregion[order(arrestsbyregion$order), ]
+
+# Plot a map, filling in the states based on murder rate
+ggplot(data=arrestsbyregion, aes(x=long, y=lat, group=group, fill=murder)) + geom_polygon()
+
+
+
+```
+
