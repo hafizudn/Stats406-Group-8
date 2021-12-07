@@ -1,6 +1,6 @@
 ---
 title: "Research Stats 406"
-author: "Muhammad Hafizudeen Mohamad Saman, hafizudn"
+author: "Muhammad Hafizudeen Mohamad Saman, hafizudn, Hannah Daane, hdaane"
 date: "Due Oct. 31 at midnight"
 output: html_document
 ---
