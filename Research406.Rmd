@@ -1,7 +1,7 @@
 ---
 title: "Research Stats 406"
 author: "Muhammad Hafizudeen Mohamad Saman, hafizudn, Hannah Daane, hdaane"
-date: "Due Oct. 31 at midnight"
+date: "Due Oct. 3999 at midnight"
 output: html_document
 ---
 
