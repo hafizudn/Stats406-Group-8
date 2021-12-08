@@ -13,60 +13,43 @@ library(ggplot2)
 ```
 
 ```{r}
-#Read Excel
-shootings <- read.csv("school_shooting_db_20200316.csv")
 
-#Getting Rid of Unnecessary Columns
 shootings$Summary <- NULL
 shootings$Narrative..Detailed.Summary..Background. <- NULL
 shootings$Sources <- NULL
 shootings$Shooter.Name <- NULL
 shootings$School <- NULL
 
-#Summary of Data set
-summary(shootings)
-                                                                                                           
+
 ```
 # Data
 
 The data that we are going to use to analyze the suicide trend of school shooter over the year in this project is provided by the Center for Homeland Defense and Security (CHDS) at the Naval Postgraduate School. This data recorded the instances of school shootings that happen over the span of 50 years in the United States, ranging from 1970 to 2020. The data provides substantial information concerning each occasion of school shooting, including detailed location, time, victims, shooter, firearm used, hostages, and even a brief summary on what happened in each instance of shooting. 
 
-# Explaining Defficiencies
+The shooter information is available with several descriptors: Number of shooters, their names, type of attack (whether the shooting is accidental, gang-related, robbery, targeted attack, mental health related, or escalation of dispute), action immediately after shooting, whether the shooters have been bullied, their age, gender, race, ethnicity, affiliation with school, hostages taken, whether or not they have accomplice who did not fire a gun, and whether or not they attempted suicide after shooting. We are interested in looking deeper into the last variable (suicide attempts by the shooters) and analyze its trend over the five decades this data has been collected. We are also intended in looking at the shooters' ages to see how much each age group's suicide rate change over these years.
 
-Some data are not accurate. For example, there is a shooter who is listed as 40888 years old, which drastically shifted the mean of the shooter's age to 59.5 years old. These data are checked against the source and is replaced by its actual value or is removed.
+The suicide attempt by shooter column in the data consist of 5 different values: Y= Yes, N=No,Officer Involved = whether an officer is the shooter, Unknown = unknown, and N/A= no data is collected. There are 16 N/A's, 1 Unknown, and 24 Officer involved. In this paper, we are going to remove these three types of observation from our analysis and only look at the known values for the suicide attempts by non-officer shooters. Similarly, observations with no data on shooter's age will not be used in the age analysis. As for the trend increase, we will only look at the year as a whole. 1/1/2019 is equivalent to 12/31/2019, but is different from 1/1/2020.
 
-Looking at our variable of interest, such as the shooter's age, there are 489 values that are missing in our data. TO avoid 
+Some data are not accurate. For example, there is a shooter who is listed as 40888 years old, which drastically shifted the mean of the shooter's age to 59.5 years old. These data are checked against the source and is replaced by its actual value, given that it is stated in the source. Also, the data for 2020 is not completed, as there are only observations for shooting in January. Since we are analyzing the data by the year, we have to exclude 2020 from our analysis.
 
-From a preliminary analysis, we found out that there is an increasing trend in suicide attempt by school shooter over the last five decades. We planned on going further to analyze this relationship and relate this to the age of the shooter yada yada yada
-
-
+A preliminary inspection of the data shows an increasing pattern in the suicide attempts by the shooter over the years, as given in the figure below. The number of suicide attempts is likely to be correlated with the number of shootings in that particular year. Therefore, to account for this, we will also look at the percentage of suicide attempts in addition to the raw number.
 ```{r}
 #Change the value of the outlier
 naremoved <- shootings[!is.na(shootings$Shooter.Age),]
 naremoved$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
 
 library(ggplot2)
-
+#Add Year Column
+shootings$Year <- format(as.Date(shootings$Date, format="%m/%d/%Y"),"%Y")
+shootings$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
 ggplot(data = shootings) +
-    geom_col(mapping = aes(x = Year, y = Suicide..or.attempted.suicide..by.Shooter..Y.N.)) 
+    geom_col(mapping = aes(x = Year, y = Suicide..or.attempted.suicide..by.Shooter..Y.N.)) + ylab("Number of Suicide Attempts")
 ```
 
 ```{r}
-install.packages("maps")
-library("maps") #Assuming this is installed, otherwise install first
-USStates <- map_data("state")
-arrests <- USArrests #Create a copy
-names(arrests) <- tolower(names(arrests)) #Converts column name to lower case
-arrests$region <- tolower(rownames(USArrests)) #Same for row names
-
-# Merge the map data with the arrests data based on region
-arrestsbyregion <- merge(USStates, arrests, sort = FALSE, by = "region")
-arrestsbyregion <- arrestsbyregion[order(arrestsbyregion$order), ]
-
-# Plot a map, filling in the states based on murder rate
-ggplot(data=arrestsbyregion, aes(x=long, y=lat, group=group, fill=murder)) + geom_polygon()
-
-
-
+shootings$suicide <- ifelse((shootings$Suicide..or.attempted.suicide..by.Shooter..Y.N. == 'Y'), TRUE, FALSE)
+str(shootings)
+lm.rv <- lm(suicide~Killed..includes.shooter.+ Wounded + Total.Injured.Killed.Victims +
+Victim.s.age.s. + Race + Shooter.Gender + Shooter.Age + Shooter.Ethnicity + Shooter.s.Affiliation.with.School, data = shootings)
+summary(lm.rv)
 ```
-
