@@ -13,7 +13,6 @@ set.seed(3910349)
 library(tidyverse)
 ```
 # hello, this is my second commit
-#thisis a final change
 ```{r}
 shootings <- read.csv("school_shooting_db_20200316.csv")
 shootings
