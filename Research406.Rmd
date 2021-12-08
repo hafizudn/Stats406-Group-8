@@ -13,6 +13,8 @@ library(ggplot2)
 ```
 
 ```{r}
+#Load Excel File
+shootings <- as.data.frame(read.csv("school_shooting_db_20200316.csv"))
 
 shootings$Summary <- NULL
 shootings$Narrative..Detailed.Summary..Background. <- NULL
