@@ -8,34 +8,19 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 set.seed(3910349)
-#install.packages("tidyverse")
-#install.packages("ggplot2")
 library(tidyverse)
+library(ggplot2)
 ```
 
 ```{r}
-shootings <- as.data.frame(read.csv("school_shooting_db_20200316.csv"))
+
 shootings$Summary <- NULL
 shootings$Narrative..Detailed.Summary..Background. <- NULL
 shootings$Sources <- NULL
 shootings$Shooter.Name <- NULL
 shootings$School <- NULL
 
-# summary(shootings)
-# shootings$City <- as.factor(shootings$City)
-# shootings$State <- as.factor(shootings$State)
-# shootings$Gender.of.Victims..M.F.Both. <- as.factor(shootings$Gender.of.Victims..M.F.Both.)
-# shootings$Victim.s.Affiliation.w..School <- as.factor(shootings$Victim.s.Affiliation.w..School)
-# shootings$Victims.Race <- as.factor(shootings$Victims.Race)
-# shootings$Victim.Ethnicity <- as.factor(shootings$Victim.Ethnicity )
-# shootings$Targeted.Specific.Victim.s. <- as.factor(shootings$Targeted.Specific.Victim.s.)
-# shootings$Random.Victims <- as.factor(shootings$Random.Victims)
-# shootings$Domestic.Violence..Y.N. <- as.factor(shootings$Domestic.Violence..Y.N.)
-# shootings$Suicide..Shooter.was.only.victim..Y.N..N.A <- as.factor(shootings$Suicide..Shooter.was.only.victim..Y.N..N.A)
 
-
-shootings <- as.data.frame(unclass(shootings),stringsAsFactors=TRUE)
-summary(shootings)   
 ```
 # Data
 
