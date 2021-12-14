@@ -52,13 +52,13 @@ Some data are not accurate. For example, there is a shooter who is listed as 408
 A preliminary inspection of the data shows an increasing pattern in the suicide attempts by the shooter over the years, as given in the figure below. The number of suicide attempts is likely to be correlated with the number of shootings in that particular year. Therefore, to account for this, we will also look at the percentage of suicide attempts in addition to the raw number.
 ```{r}
 #Change the value of the outlier
-naremoved <- shootings[!is.na(shootings$Shooter.Age),]
-naremoved$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
+#naremoved <- shootings[!is.na(shootings$Shooter.Age),]
+#naremoved$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
 
 library(ggplot2)
 #Add Year Column
 shootings$Year <- format(as.Date(shootings$Date, format="%m/%d/%Y"),"%Y")
-shootings$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
+shootings$Shooter.Age[which(shootings$Shooter.Age == 40888)] <- 12
 ggplot(data = shootings) +
     geom_col(mapping = aes(x = Year, y = Suicide..or.attempted.suicide..by.Shooter..Y.N.)) + ylab("Number of Suicide Attempts")
 ```
@@ -73,24 +73,23 @@ summary(lm.rv)
 mean(shootings$Total.Injured.Killed.Victims)
 ```
 
-
-
-
-#Hafiz Part
-
-We want to analyze 
+#Hannah Part
 
 ```{r}
-library(dplyr)
-shootings$Year <- as.numeric(shootings$Year)
-suicide.by.year <- as.data.frame(shootings)
-suicide.by.year <- suicide.by.year[,c("Year", "suicide")]
-suicide.by.year$count <- 1
-agg.suicide <- suicide.by.year %>% mutate(decade = floor(Year/10)*10) %>% 
-      group_by(decade) %>% 
+suicide.by.age <- shootings[,c("Shooter.Age", "suicide")]
+suicide.by.age$count <- 1
+agg.age_maybe  <- 
+  mutate(suicide.by.age, Age.Shooter = Shooter.Age) %>% group_by(Shooter.Age, Age.Shooter) %>% 
       summarize_all(sum) %>% 
-      select(-Year)
-agg.suicide$percentage <- agg.suicide$suicide/agg.suicide$count
-agg.suicide
-summary(lm(percentage ~ decade, agg.suicide))
+      select(-Shooter.Age)
+#agg.age_maybe$count <- 1
+agg.age_maybe$percentage <- agg.age_maybe$suicide/agg.age_maybe$count
+
+
+ggplot(agg.age_maybe) +
+  geom_col(mapping = aes(x = Age.Shooter, y = percentage)) + xlab("Shooter's Age")  + ylab("Percentage of Suicide")
+
+
+summary(lm(formula = percentage~Age.Shooter, data = agg.age_maybe))
+median(shootings$Shooter.Age, na.rm=TRUE)
 ```
