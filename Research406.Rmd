@@ -20,6 +20,9 @@ shootings$Narrative..Detailed.Summary..Background. <- NULL
 shootings$Sources <- NULL
 shootings$Shooter.Name <- NULL
 shootings$School <- NULL
+
+
+
 # summary(shootings)
 # shootings$City <- as.factor(shootings$City)
 # shootings$State <- as.factor(shootings$State)
@@ -31,6 +34,8 @@ shootings$School <- NULL
 # shootings$Random.Victims <- as.factor(shootings$Random.Victims)
 # shootings$Domestic.Violence..Y.N. <- as.factor(shootings$Domestic.Violence..Y.N.)
 # shootings$Suicide..Shooter.was.only.victim..Y.N..N.A <- as.factor(shootings$Suicide..Shooter.was.only.victim..Y.N..N.A)
+
+
 shootings <- as.data.frame(unclass(shootings),stringsAsFactors=TRUE)
 summary(shootings)   
 ```
@@ -49,6 +54,7 @@ A preliminary inspection of the data shows an increasing pattern in the suicide 
 #Change the value of the outlier
 #naremoved <- shootings[!is.na(shootings$Shooter.Age),]
 #naremoved$Shooter.Age[which(naremoved$Shooter.Age == 40888)] <- 12
+
 library(ggplot2)
 #Add Year Column
 shootings$Year <- format(as.Date(shootings$Date, format="%m/%d/%Y"),"%Y")
@@ -78,8 +84,66 @@ agg.age_maybe  <-
       select(-Shooter.Age)
 #agg.age_maybe$count <- 1
 agg.age_maybe$percentage <- agg.age_maybe$suicide/agg.age_maybe$count
+
+
 ggplot(agg.age_maybe) +
   geom_col(mapping = aes(x = Age.Shooter, y = percentage)) + xlab("Shooter's Age")  + ylab("Percentage of Suicide")
+
+
 summary(lm(formula = percentage~Age.Shooter, data = agg.age_maybe))
 median(shootings$Shooter.Age, na.rm=TRUE)
+```
+New hannah code
+```{r}
+mean_data <-mean(agg.age_maybe$percentage)
+var_data <- var(agg.age_maybe$percentage)
+  (alpha = (((1 - mean_data) / var_data) - (1/mean_data)) * (mean_data^2))  
+  (beta = alpha * ((1/mean_data) - 1))
+
+
+
+f <- function() {rbeta(5, alpha, beta)}
+ g <- function() { rnorm(5, 0 , 1)}
+ 
+ estimate_rejection_prob <- function(f, g) {
+  k <- 1000
+  rejections <- replicate(k, {
+    x <- f()
+    y <- g()
+    c(t.test(x, y)$p.value < 0.1,
+      wilcox.test(x, y)$p.value < 0.1) 
+  })
+  
+  est.t <- mean(rejections[1,])
+  ci.t <- binom.test(sum(rejections[1,]), k, conf.level = 0.95)$conf.int
+  
+  est.w <- mean(rejections[2,])
+  ci.w <- binom.test(sum(rejections[2,]), k, conf.level = 0.95)$conf.int
+  
+  matrix(c(est.t, ci.t, est.w, ci.w), nrow = 2, byrow = TRUE, 
+         dimnames = list(test = c("t-test", "WMW"), value = c("Estimate", "Lower", "Upper")))
+}
+ 
+ #difference in power
+ estimate_rejection_prob(f,g)
+
+ #Boxplot comparing suicide and age
+mutate(shootings, Age = Shooter.Age) %>%
+ggplot() +
+  geom_boxplot(mapping = aes(x = suicide, y = Age))
+
+
+shootings %>%
+ggplot() +
+  geom_bar(mapping = aes(x = Year, fill = suicide)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = .7, hjust= .5))
+#Median Year
+median(shootings$Year)
+#Mean Year
+mean(shootings$Year)
+
+
+#Percentage of Schoool Shootings with Suicides 
+sum(shootings$suicide == TRUE) / sum(shootings$suicide == FALSE | TRUE)
+
 ```
