@@ -147,3 +147,140 @@ mean(shootings$Year)
 sum(shootings$suicide == TRUE) / sum(shootings$suicide == FALSE | TRUE)
 
 ```
+
+
+#Hafiz Part
+
+
+
+```{r}
+#removing 2020 from the data
+shootings <- shootings[1:1507,]
+
+library(dplyr)
+shootings$Year <- as.numeric(shootings$Year)
+suicide.by.year <- as.data.frame(shootings)
+suicide.by.year <- suicide.by.year[,c("Year", "suicide")]
+suicide.by.year$count <- 1
+agg.suicide <- suicide.by.year %>% mutate(year = floor(Year/1)*1) %>% 
+      group_by(year) %>% 
+      summarize_all(sum) %>% 
+      select(-Year)
+agg.suicide$percentage <- agg.suicide$suicide/agg.suicide$count
+summary(lm(percentage ~ year, agg.suicide, weights = agg.suicide$count))
+
+plot(agg.suicide$year,agg.suicide$percentage)
+
+agg.suicide
+```
+
+
+# WLS model to fit linear regression on the number of suicide 
+```{r}
+lm.numberofsuicide.vs.year <- lm(suicide~year, agg.suicide, weights = agg.suicide$count)
+summary(lm.numberofsuicide.vs.year)
+```
+
+# WLS model to fit linear regression on the PERCENTAGE of suicide 
+```{r}
+lm.percofsuicide.vs.year <- lm(percentage~year, agg.suicide, weights = agg.suicide$count)
+summary(lm.percofsuicide.vs.year)
+
+```
+#Ordinary Least Squares for number of suicide vs year
+```{r}
+olm.numberofsuicide.vs.year <- lm(suicide~year, agg.suicide)
+summary(olm.numberofsuicide.vs.year)
+```
+
+
+```{r}
+##Simulation for WLS (Using real data)
+#sample 20 years from 50yrs
+#10000 times
+beta_1_number <- c()
+beta_1_percentage <- c()
+for(i in 1:10000){
+  sample_idx <- sample(1:nrow(agg.suicide), 20)
+  sample_data <- agg.suicide[sample_idx,]
+  lm.model <- lm(suicide~year, sample_data, weights = count)
+  lm.model2 <- lm(percentage~year, sample_data, weights = count)
+  beta_1_number[i] <- lm.model$coefficients[2]
+  beta_1_percentage[i] <- lm.model2$coefficients[2]
+}
+hist(beta_1_number)
+hist(beta_1_percentage)
+quantile(beta_1_number, c(0.025,0.975))
+quantile(beta_1_percentage, c(0.025,0.975))
+sample(agg.suicide,1)
+
+##Simulation for WLS (Using SIMULATED data)
+#sample 20 years from 50yrs
+
+ols.std.err <- c()
+wls.std.err <- c()
+wls.beta.1 <- c()
+#creating simulated agg.suicide
+for(i in 1:1000){
+  n=rep(1:100,2)
+  sigma2 = n^1.3
+  eps = rnorm(n,mean=0,sd=sqrt(sigma2))
+  y=a+b*n + eps
+  datas <- data.frame(cbind(n,y))
+  lm.model <- lm(y~n, datas)
+  beta_1_number[i] <- lm.model$coefficients[2]
+  ols.std.err[i] <- summary(lm.model)$coefficients[2,2]
+  
+  #creating weights
+  wt <- 1/sigma2
+  lm.model2 <- lm(y~n, datas, weights = wt)
+  wls.beta.1[i] <- lm.model2$coefficients[2]
+  wls.std.err[i] <- summary(lm.model2)$coefficients[2,2]
+}
+
+data2 <- data.frame(ols.std.err, wls.std.err)
+#density(x,'OLS Std Error','density')
+ggplot(data2) + 
+  geom_density(aes(ols.std.err), col= "blue") + xlab('Standard Error') + ylab('density') + geom_density(aes(wls.std.err), col= "red")
+
+```
+```{r}
+ggplot(agg.age_maybe, aes(x=Shooter.Age, y= percentage)) + geom_point() + xlab("Shooter's Age") + ylab("Percentage of Suicide") + geom_smooth(method='lm')
+
+
+ggplot(agg.age_maybe, aes(x=Shooter.Age, y= suicide)) + geom_point() + xlab("Shooter's Age") + ylab("Number of Suicide") + geom_smooth(method='lm') 
+```
+
+
+#Suicide percentage between Young and Adult
+```{r}
+#data has to have age of shooter, suicide number for each age group, and count number for each age group
+welch.t.test <- function(data){
+  age.group <- data
+  age.group$young <- ifelse(age.group$Age.Shooter <18, "Young", "Adult")
+  age.group$young <- as.factor(age.group$young)
+  young <- age.group[which(age.group$young == "Young"), ]
+  adult <- age.group[which(age.group$young == "Adult"), ]
+  t.test(young$percentage, adult$percentage)
+}
+ttest.age <- welch.t.test(agg.age_maybe)
+ttest.age
+
+
+#simulation`
+#agg.age_maybe$young <- ifelse(agg.age_maybe$Age.Shooter <18, "Young", "Adult")
+#agg.age_maybe$young <- as.factor(agg.age_maybe$young)
+#age.group <- (agg.age_maybe%>% group_by(young) %>% summarize_all(sum))
+
+#genderweight %>%
+#  group_by(group) %>%
+#  get_summary_stats(weight, type = "mean_sd")
+```
+
+
+
+We only have about 50 data points, so our regression might not be the most accurate. So we should use bootstrap to increase the number of observations. 
+
+Question 1: Each year has different number of shootings. How to assign weights to years with more shooting?
+
+Question 2: Should we use bootstrap to get more data? How to implement bootstrap if the data is not iid?
